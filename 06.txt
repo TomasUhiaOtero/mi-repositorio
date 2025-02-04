@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant user as Usuario
+    participant browser as Navegador
+    participant server as Servidor
+
+    user->>browser: Escribe una nota en el campo de texto
+    user->>browser: Clic en el botón "Save"
+
+    Note right of browser: El navegador captura el evento y actualiza la interfaz sin recargar la página
+
+    browser->>server: POST /new_note_spa con la nueva nota en formato JSON
+    activate server
+    server-->>browser: Respuesta HTTP 201 (Creado)
+    deactivate server
+
+    Note right of browser: La nueva nota se agrega a la lista de notas localmente
+
+    browser->>server: (Opcional) GET /data.json para sincronizar las notas
+    activate server
+    server-->>browser: JSON con todas las notas, incluida la nueva
+    deactivate server
+
+    Note right of browser: La interfaz se actualiza con la nueva nota
