@@ -1,1 +1,28 @@
-aaa 
+sequenceDiagram
+    participant user as User
+    participant browser as Browser
+    participant server as Server
+
+    user->>browser: Writes a note in the text field
+    user->>browser: Clicks the "Save" button
+
+    Note right of browser: The browser captures the event and executes JavaScript
+
+    browser->>server: POST https://studies.cs.helsinki.fi/exampleapp/new_note
+    activate server
+    server-->>browser: HTTP 302 Response (Redirection)
+    deactivate server
+
+    Note right of browser: The browser follows the redirection and reloads the page
+
+    browser->>server: GET https://studies.cs.helsinki.fi/exampleapp/notes
+    activate server
+    server-->>browser: Updated HTML
+    deactivate server
+
+    browser->>server: GET https://studies.cs.helsinki.fi/exampleapp/data.json
+    activate server
+    server-->>browser: JSON with the new note included
+    deactivate server
+
+    Note right of browser: The browser renders the updated list of notes
