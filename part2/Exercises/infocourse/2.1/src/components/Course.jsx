@@ -1,4 +1,5 @@
 import React from "react";
+import Total from "./Total";
 
 const Header = ({ course }) => <h2>{course.name}</h2>;
 
@@ -21,7 +22,8 @@ const Part = ({ part }) => (
     <div>
       <Header course={course} />
       <Content parts={course.parts} />
+      <Total parts={course.parts}></Total>
     </div>
   );
-  
+
 export default Course;

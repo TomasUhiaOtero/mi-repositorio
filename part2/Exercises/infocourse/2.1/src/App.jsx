@@ -1,5 +1,6 @@
 import React from 'react'
 import Course from './components/Course'
+import './components/Total'
 
 const App = () => {
   const courses = [
