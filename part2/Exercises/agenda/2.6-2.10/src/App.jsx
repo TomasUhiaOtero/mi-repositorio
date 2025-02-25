@@ -18,7 +18,7 @@ const App = () => {
     event.preventDefault();
     if(!newName || !newNumber) {
       alert('Please fill in all fields');
-      return;
+      return; 
     }
     if (persons.some(person => person.name === newName || person.number === newNumber )) {
       alert(`${newName} or ${newNumber} is already added to the phonebook`);
