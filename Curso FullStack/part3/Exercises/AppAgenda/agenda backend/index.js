@@ -5,6 +5,7 @@ const app = express()
 
 app.use(express.json())
 app.use(cors())
+app.use(express.static('dist'))
 
 morgan.token('body', (req) => JSON.stringify(req.body))
 
@@ -39,15 +40,18 @@ const generateId = () => {
     do {
         newId = Math.floor(Math.random() * 1000000)
     } while (persons.find(person => person.id === newId))
+      return newId
 }
 
  // GET all persons
  app.get('/api/persons', (request, response) => {
+    console.log('GET /api/persons');
     response.json(persons)
 })
 
 // GET a single person by ID
 app.get('/api/persons/:id', (request, response) => {
+  console.log(`GET /api/persons/${request.params.id}`)
     const id = Number(request.params.id)
     const person = persons.find(person => person.id === id)
   
