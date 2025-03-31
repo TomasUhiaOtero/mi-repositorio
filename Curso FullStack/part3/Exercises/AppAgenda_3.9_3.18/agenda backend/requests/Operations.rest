@@ -1,0 +1,22 @@
+GET http://localhost:3001/api/persons/
+
+###
+
+DELETE http://localhost:3001/api/persons/invalid-id
+
+###
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+  "name": "Antonio",
+  "number": "123124"
+}
+###
+PUT http://localhost:3001/api/persons/67dc29287647014459b7bb58
+Content-Type: application/json
+
+{
+  "name": "Ada Lovelace",
+  "number": "11-11-1111111"
+}
