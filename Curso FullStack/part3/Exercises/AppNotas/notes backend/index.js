@@ -1,79 +1,106 @@
+require('dotenv').config()
 const express = require('express')
-const mongoose = require('mongoose')
+const Note = require('./models/note')
 
 const app = express()
+
+const requestLogger = (request, response, next) => {
+  console.log('Method:', request.method)
+  console.log('Path:  ', request.path)
+  console.log('Body:  ', request.body)
+  console.log('---')
+  next()
+}
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
+  }
+
+  next(error)
+}
+
+app.use(express.static('dist'))
 app.use(express.json())
+app.use(requestLogger)
 
-// Conexión a MongoDB
-const password = 'your_password_here' // Reemplaza con tu contraseña
-const url = `mongodb+srv://tomasuhiaotero:${password}@agenda.alabu.mongodb.net/?retryWrites=true&w=majority&appName=Agenda`
-
-mongoose.set('strictQuery', false)
-mongoose.connect(url)
-  .then(() => console.log('Conectado a MongoDB'))
-  .catch((error) => console.error('Error al conectar a MongoDB:', error.message))
-
-// Esquema y modelo de Mongoose
-const noteSchema = new mongoose.Schema({
-  content: {
-    type: String,
-    minLength: 5,
-    required: true
-  },
-  important: Boolean
+app.get('/', (request, response) => {
+  response.send('<h1>Hello World!</h1>')
 })
 
-const Note = mongoose.model('Note', noteSchema)
+app.get('/api/notes', (request, response) => {
+  Note.find({}).then((notes) => {
+    response.json(notes)
+  })
+})
 
-// Rutas
-app.get('/api/notes', (req, res, next) => {
-  Note.find({})
-    .then((notes) => res.json(notes))
+app.get('/api/notes/:id', (request, response, next) => {
+  Note.findById(request.params.id)
+    .then((note) => {
+      if (note) {
+        response.json(note)
+      } else {
+        response.status(404).end()
+      }
+    })
     .catch((error) => next(error))
 })
 
-app.post('/api/notes', (req, res, next) => {
-  const body = req.body
-
-  if (!body.content) {
-    return res.status(400).json({ error: 'content missing' })
-  }
+app.post('/api/notes', (request, response, next) => {
+  const body = request.body
 
   const note = new Note({
     content: body.content,
-    important: body.important || false
+    important: body.important || false,
   })
 
-  note.save()
-    .then((savedNote) => res.json(savedNote))
+  note
+    .save()
+    .then((savedNote) => {
+      response.json(savedNote)
+    })
     .catch((error) => next(error))
 })
 
 app.put('/api/notes/:id', (request, response, next) => {
   const { content, important } = request.body
 
-  Note.findByIdAndUpdate(
-    request.params.id, 
-    { content, important },
-    { new: true, runValidators: true, context: 'query' }
-  ) 
-    .then(updatedNote => {
-      response.json(updatedNote)
+  Note.findById(request.params.id)
+    .then((note) => {
+      if (!note) {
+        return response.status(404).end()
+      }
+
+      note.content = content
+      note.important = important
+
+      return note.save().then((updatedNote) => {
+        response.json(updatedNote)
+      })
     })
-    .catch(error => next(error))
+    .catch((error) => next(error))
 })
 
-// Middleware para manejo de errores
-app.use((error, req, res, next) => {
-  console.error(error.message)
-  if (error.name === 'ValidationError') {
-    return res.status(400).json({ error: error.message })
-  }
-  next(error)
+app.delete('/api/notes/:id', (request, response, next) => {
+  Note.findByIdAndDelete(request.params.id)
+    .then((result) => {
+      response.status(204).end()
+    })
+    .catch((error) => next(error))
 })
 
-// Iniciar el servidor
-const PORT = 3001
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
+
+app.use(unknownEndpoint)
+app.use(errorHandler)
+
+const PORT = process.env.PORT
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en el puerto ${PORT}`)
+  console.log(`Server running on port ${PORT}`)
 })
