@@ -23,7 +23,11 @@ mongoose.connect(url)
 
 // Definición del esquema y modelo
 const personSchema = new mongoose.Schema({
-  name: String,
+  name: {
+    type: String,
+    required: true,
+    minlength: 3,
+  },
   number: String,
 })
 const Person = mongoose.model('Person', personSchema)
@@ -92,7 +96,7 @@ app.post('/api/persons', (request, response) => {
     .then((savedPerson) => {
       response.json(savedPerson)
     })
-    .catch((error) => nexxt(error))
+    .catch((error) => next(error))
 })
 
 // GET info
