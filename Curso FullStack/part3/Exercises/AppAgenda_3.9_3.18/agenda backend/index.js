@@ -28,8 +28,18 @@ const personSchema = new mongoose.Schema({
     required: true,
     minlength: 3,
   },
-  number: String,
-})
+  number: {
+    type: String,
+    required: true,
+    validate: {
+      validator: function (v) {
+        // Validar que el número tenga el formato correcto
+        return /^\d{2,3}-\d+$/.test(v) && v.length >= 8;
+      },
+      message: (props) => `${props.value} is not a valid phone number!`,
+    },
+  },
+});
 const Person = mongoose.model('Person', personSchema)
 
 // GET all persons
